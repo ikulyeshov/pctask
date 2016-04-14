@@ -1,7 +1,7 @@
 #ifndef _IRTP_PACKETIZER_H_
 #define _IRTP_PACKETIZER_H_
 
-class IRTP_Packetizer
+class IRtpPacketizer
 {
 public:
     virtual void InitPacket( void* pData, size_t dataLength ); //Init packetizer by h264 bitstream buffer

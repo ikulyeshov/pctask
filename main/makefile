@@ -1,4 +1,4 @@
-SOURCES = main.cpp f.cpp
+SOURCES = main.cpp
 PRODUCT := main
 LIBS := infra
 

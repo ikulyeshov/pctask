@@ -1,7 +1,9 @@
 #ifndef _ICAMERA_H_
 #define _ICAMERA_H_
 
+#include <stdlib.h>
 #include <stdint.h>
+#include "Types.hpp"
 
 struct FrameContext
 {
