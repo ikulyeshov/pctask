@@ -11,6 +11,7 @@
 #include <pthread.h>
 
 #include "TextMessageDefines.hpp"
+#include "Types.hpp"
 
 namespace infra
 {

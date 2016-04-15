@@ -16,18 +16,9 @@ namespace msgserver
 
 const int TEXT_MESSAGE_MAX_MESSAGE_LEN =		100;
 
-enum Status
-{
-	ST_OK,
-	ST_ERROR,
-	ST_SELECT_ERROR,
-	ST_BINDING_ERROR,
-	ST_ACCEPT_ERROR,
-	ST_OPEN_ERROR,
-	ST_WRITE_ERROR,
-	ST_PARAM_ERROR,
-	ST_CONNECT_ERROR
-};
+const char MSG_START[] = 		"Start\n";
+const char MSG_STOP[] = 		"Stop\n";
+
 
 } //namespace msgserver
 } //namespace infra

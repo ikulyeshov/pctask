@@ -29,6 +29,13 @@ Client::~Client()
 
 }
 
+Status Client::Message(const char* message)
+{
+	Status st = ST_OK;
+	mTransport->Write(message);
+	return st;
+}
+
 Status Client::Start(const char* addr, int port)
 {
     int sockfd = -1, portno, n;
@@ -66,28 +73,8 @@ Status Client::Start(const char* addr, int port)
 			break;
 		}
 
-		Transport transport(sockfd, 0);
-//		transport.Listen();
-
-		char buffer[TEXT_MESSAGE_MAX_MESSAGE_LEN];
-
-		do
-		{
-			printf("Please enter the message: ");
-			bzero(buffer, 256);
-			fgets(buffer, 255, stdin);
-
-
-//			int n = write(sockfd, buffer, strlen(buffer));
-			if ((st = transport.Write(buffer)) != ST_OK)
-			{
-				break;
-			}
-		}
-		while (st == ST_OK && buffer[0] != 'c');
-
-		if (st != ST_OK)
-			break;
+		mTransport = new Transport(sockfd, 0);
+		mTransport->Listen();
     }
     while (0);
 

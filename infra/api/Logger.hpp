@@ -33,7 +33,7 @@
 #define ps_log(level, fmt, ...) \
 		{\
 			ps_printf(level, LOGGER_MODULE ": " fmt, ##__VA_ARGS__);\
-			ps_printf(level, "\n");\
+			ps_printf(level, "\n\r");\
 		}
 
 static inline void ps_printf(unsigned level, const char *fmt, ...)

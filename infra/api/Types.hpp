@@ -1,4 +1,10 @@
 
+#ifndef API_TYPES_HPP_
+#define API_TYPES_HPP_
+
+
+typedef int Handle;
+
 template < typename CallBackType, typename ContextType >
 struct CallBackEvent
 {
@@ -14,8 +20,15 @@ struct ImageResolution
 
 enum Status
 {
-    SUCCESS_STATUS,
-    FAIL_STATUS
+	ST_OK,
+	ST_ERROR,
+	ST_SELECT_ERROR,
+	ST_BINDING_ERROR,
+	ST_ACCEPT_ERROR,
+	ST_OPEN_ERROR,
+	ST_WRITE_ERROR,
+	ST_PARAM_ERROR,
+	ST_CONNECT_ERROR
 };
 
 struct CaptureMode
@@ -24,3 +37,4 @@ struct CaptureMode
     uint32_t        Bitrate;
 };
 
+#endif //API_TYPES_HPP_

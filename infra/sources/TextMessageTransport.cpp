@@ -55,6 +55,7 @@ Status Transport::Write(const char* message)
 		ps_log_error("Error writing to socket");
 		st = ST_WRITE_ERROR;
 	}
+//	write(mSocket, "\n", 1);
 
 	return st;
 }
@@ -72,19 +73,19 @@ void Transport::DoThread()
 
 	while (st == ST_OK)
 	{
-//		if (select(FD_SETSIZE, &read_fd, NULL, NULL, NULL) < 0)
-//		{
-//			ps_log_error ("Error on select");
-//			st = ST_SELECT_ERROR;
-//			break;
-//		}
-//
-//		for (int i = 0; i < FD_SETSIZE && st == ST_OK; ++i)
-//		{
-//			if (FD_ISSET (i, &read_fd))
-//			{
-//				if (i == mSocket)
-//				{
+		if (select(FD_SETSIZE, &read_fd, NULL, NULL, NULL) < 0)
+		{
+			ps_log_error ("Error on select");
+			st = ST_SELECT_ERROR;
+			continue;
+		}
+
+		for (int i = 0; i < FD_SETSIZE && st == ST_OK; ++i)
+		{
+			if (FD_ISSET (i, &read_fd))
+			{
+				if (i == mSocket)
+				{
 					int n = read(mSocket, mBufferPtr, TEXT_MESSAGE_MAX_MESSAGE_LEN - (mBufferPtr - mBuffer) /*space left*/);
 					mBufferPtr += n;
 
@@ -94,7 +95,8 @@ void Transport::DoThread()
 					{
 						if (mBuffer[j] == '\n')
 						{
-							ps_log_debug("%i Msg -> %s\n", mSocket, prevToken);
+							mBuffer[j] = '\0';
+							ps_log_debug("%i Msg -> %s", mSocket, prevToken);
 							if (mObserver)
 							{
 								mObserver->OnMessage(prevToken);
@@ -125,9 +127,9 @@ void Transport::DoThread()
 					{
 						mBufferPtr = mBuffer;
 					}
-//				}
-//			}
-//		}
+				}
+			}
+		}
 	}
 }
 

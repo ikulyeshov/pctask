@@ -26,7 +26,47 @@ int main(int argc, char* argv[])
     }
 
     infra::msgserver::Server server;
-    server.Start(portno);
+    int curClient = 0;
+
+    if (server.Start(portno) == ST_OK)
+    {
+		system("stty raw -echo");
+
+		int ch = 0;
+		do
+		{
+			ch = getchar();
+
+			switch (ch)
+			{
+			case 's':
+				ps_log_info("Start stream");
+				server.Message(curClient, infra::msgserver::MSG_START);
+				break;
+			case 't':
+				ps_log_info("Stop stream");
+				server.Message(curClient, infra::msgserver::MSG_STOP);
+				break;
+			case 'p':
+				ps_log_info("List of connections");
+				server.List();
+				break;
+			case '+':
+				++curClient;
+				ps_log_info("Current client: %i", curClient);
+				break;
+			case '-':
+				--curClient;
+				ps_log_info("Current client: %i", curClient);
+				break;
+			}
+		}
+		while (ch != 'q');
+
+		system("stty cooked echo");
+    }
+
+    ps_log_info("Exiting server");
 
     return 0;
 }
