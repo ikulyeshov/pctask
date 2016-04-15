@@ -10,7 +10,7 @@ LIBDEPS := $(addsuffix .a,$(LIBDEPS))
 TARGET := $(OBJ_PATH)/$(PRODUCT).exe
 INC_FLAGS := $(addprefix -I,$(INC_PATH))
 LIBINC_FLAGS := $(addprefix -I,$(LIBINCDEPS))
-CPPFLAGS := -lstdc++ $(INC_FLAGS) $(LIBINC_FLAGS)
+CPPFLAGS := -lstdc++ $(INC_FLAGS) $(LIBINC_FLAGS) -DLOGGER_MODULE=\"$(PRODUCT)\"
 	
 $(TARGET): $(LIBDEPS) $(OBJS)
 	gcc $(OBJS) $(LIBDEPS) -o $(TARGET)
