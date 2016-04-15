@@ -19,7 +19,7 @@ $(TARGET): $(LIBDEPS) $(OBJS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp
 	mkdir -p $(OBJ_PATH)
-	gcc -c $(CPPFLAGS) $(SRC_PATH)/$*.cpp -o $(OBJ_PATH)/$*.o
+	gcc -c -g $(CPPFLAGS) $(SRC_PATH)/$*.cpp -o $(OBJ_PATH)/$*.o
 	gcc -MM -MT $(OBJ_PATH)/$*.o $(CPPFLAGS) $(SRC_PATH)/$*.cpp > $(OBJ_PATH)/$*.d
 #	@cp -f $(OBJ_PATH)/$*.d $(OBJ_PATH)/$*.d.tmp
 #	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJ_PATH)/$*.d.tmp | fmt -1 | \
