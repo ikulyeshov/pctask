@@ -3,17 +3,19 @@ SRC_PATH := sources
 INC_PATH := includes api
 OBJS := $(addprefix $(OBJ_PATH)/,$(addsuffix .o,$(basename $(SOURCES))))
 LIBDEPS := $(addprefix ../,$(LIBS))
-LIBINCDEPS := $(addsuffix /api,$(LIBDEPS))
+LIBINCDEPS := $(addsuffix /includes,$(LIBDEPS))
+LIBAPIDEPS := $(addsuffix /api,$(LIBDEPS))
 LIBDEPS := $(addsuffix /$(OBJ_PATH)/lib,$(LIBDEPS))
 LIBDEPS := $(join $(LIBDEPS),$(LIBS))
 LIBDEPS := $(addsuffix .a,$(LIBDEPS))
 TARGET := $(OBJ_PATH)/$(PRODUCT).exe
 INC_FLAGS := $(addprefix -I,$(INC_PATH))
 LIBINC_FLAGS := $(addprefix -I,$(LIBINCDEPS))
-CPPFLAGS := -lstdc++ $(INC_FLAGS) $(LIBINC_FLAGS) -DLOGGER_MODULE=\"$(PRODUCT)\"
+LIBAPI_FLAGS := $(addprefix -I,$(LIBAPIDEPS))
+CPPFLAGS := $(INC_FLAGS) $(LIBINC_FLAGS) $(LIBAPI_FLAGS) -DLOGGER_MODULE=\"$(PRODUCT)\"
 	
 $(TARGET): $(LIBDEPS) $(OBJS)
-	gcc $(OBJS) $(LIBDEPS) -o $(TARGET)
+	gcc $(OBJS) $(LIBDEPS) -o $(TARGET) -lstdc++ -lpthread
 	
 -include $(OBJS:.o=.d)
 
