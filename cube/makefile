@@ -1,4 +1,4 @@
-SOURCES = Camera.cpp Encoder.cpp Network.cpp RtpPacketizer.cpp TextMessageServer.cpp TextMessageClient.cpp TextMessageTransport.cpp Thread.cpp
-PRODUCT := infra
+SOURCES = Cube.cpp
+PRODUCT := cube
 
 -include ../makelib.mk

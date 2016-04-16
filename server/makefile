@@ -1,5 +1,5 @@
 SOURCES = server.cpp
 PRODUCT := server
-LIBS := infra
+LIBS := infra cube
 
 -include ../makeapp.mk

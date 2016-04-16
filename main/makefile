@@ -1,5 +1,5 @@
-SOURCES = main.cpp Cube.cpp
+SOURCES = main.cpp
 PRODUCT := main
-LIBS := infra
+LIBS := infra cube
 
 -include ../makeapp.mk

@@ -1,9 +1,9 @@
 OBJ_PATH := obj
 SRC_PATH := sources
-INC_PATH := includes api
+INC_PATH := includes
 OBJS := $(addprefix $(OBJ_PATH)/,$(addsuffix .o,$(basename $(SOURCES))))
 LIBDEPS := $(addprefix ../,$(LIBS))
-LIBINCDEPS := $(addsuffix /api,$(LIBDEPS))
+LIBINCDEPS := $(addsuffix /includes,$(LIBDEPS))
 LIBDEPS := $(addsuffix /$(OBJ_PATH)/lib,$(LIBDEPS))
 LIBDEPS := $(join $(LIBDEPS),$(LIBS))
 LIBDEPS := $(addsuffix .a,$(LIBDEPS))
@@ -21,10 +21,6 @@ $(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp
 	mkdir -p $(OBJ_PATH)
 	gcc -c -g $(CPPFLAGS) $(SRC_PATH)/$*.cpp -o $(OBJ_PATH)/$*.o
 	gcc -MM -MT $(OBJ_PATH)/$*.o $(CPPFLAGS) $(SRC_PATH)/$*.cpp > $(OBJ_PATH)/$*.d
-#	@cp -f $(OBJ_PATH)/$*.d $(OBJ_PATH)/$*.d.tmp
-#	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJ_PATH)/$*.d.tmp | fmt -1 | \
-#	 sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJ_PATH)/$*.d
-#	@rm -f $(OBJ_PATH)/$*.d.tmp
 
 all: $(TARGET)
 
