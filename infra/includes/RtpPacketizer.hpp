@@ -20,10 +20,17 @@ public:
 	RtpPacketizer();
 	virtual ~RtpPacketizer();
 
+    virtual void InitPacket( const void* pData, size_t dataLength );
+    virtual size_t GetNextPacketSize();
+    virtual Status GetNextPacket( void* pData, size_t dataBuffMaxSize );
+
 private:
 	//not copyable
 	RtpPacketizer(const RtpPacketizer& rop);
 	const RtpPacketizer& operator=(const RtpPacketizer& rop);
+
+	const void *mCurrentPacket;
+	int mDataLen;
 
 };
 

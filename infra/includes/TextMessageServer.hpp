@@ -10,6 +10,10 @@
 
 #include <pthread.h>
 #include <vector>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include "TextMessageDefines.hpp"
 #include "Types.hpp"
 #include "TextMessageTransport.hpp"

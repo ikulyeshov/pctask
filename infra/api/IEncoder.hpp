@@ -2,6 +2,8 @@
 #define _IENCODER_H_
 
 #include <stdint.h>
+#include <stdio.h>
+#include "Types.hpp"
 
 struct EncodeSetting
 {
@@ -23,8 +25,8 @@ class IEncoder
 public:
     virtual Status Init( EncodeSetting& encodeSetting ) = 0;
     virtual void Deinit() = 0;
-    virtual Status EncqueueFrame( void* pFrame, size_t frameSize ) = 0;
-    virtual size_t IsDequeueFrameReady(); //return size of frame, blocked
+    virtual Status EncqueueFrame( const void* pFrame, size_t frameSize ) = 0;
+    virtual size_t IsDequeueFrameReady() = 0; //return size of frame, blocked
     virtual Status DequeueFrame( void* pBitstreamBuff, size_t bitstreamSize ) = 0;
     virtual void ForceKeyFrame( void* pBitstreamBuff, size_t bitstreamSize ) = 0;
 };

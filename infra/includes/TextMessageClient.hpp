@@ -8,6 +8,11 @@
 #ifndef INCLUDES_TEXTMESSAGECLIENT_HPP_
 #define INCLUDES_TEXTMESSAGECLIENT_HPP_
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
 #include "TextMessageDefines.hpp"
 #include "Types.hpp"
 #include "TextMessageTransport.hpp"

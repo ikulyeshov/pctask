@@ -1,7 +1,9 @@
 #ifndef _INETWORK_H_
 #define _INETWORK_H_
 
+#include <stdio.h>
 #include <stdint.h>
+#include "Types.hpp"
 
 enum NetworkConnectionEvent
 {
@@ -35,6 +37,7 @@ struct NetworkEventStruct
 
         struct
         {
+        	int             Camera;
             ImageResolution Resolution;
             uint32_t        TargetBitrate;
             uint32_t        Framerate;
@@ -59,20 +62,25 @@ typedef void( *fpNetworkNetworkMediaEventCallBack )( void* pContext, NetworkEven
 class INetwork
 {
 public:
+
+	typedef CallBackEvent< fpNetworkConnectionEventCallBack, void* > NetworkCallback;
+	typedef CallBackEvent< fpNetworkNetworkMediaEventCallBack, void* > MediaCallback;
+
+public:
     class ISender
     {
     public:
         virtual Status SendRtpBuffer( uint32_t ipAddr, uint32_t port, void* pPacket, size_t packetSize ) = 0;
-        virtual Status SendCaptureCapabilities( CaptureMode** ppCaptureModeList, size_t captureModeListSize ) = 0;
+        virtual Status SendCaptureCapabilities( CaptureModeCollection& captureModes ) = 0;
         virtual Status SendStreamState( NetworkStreamState ) = 0;
     };
 
-    virtual Status Init();
-    virtual void DeInit();
-    virtual void NetworkProcessing();
-    virtual void RegisterNetworkConnectionEventHandler( fpNetworkConnectionEventCallBack fpCallback, void* pContext ) = 0;
-    virtual void RegisterNetworkMediaEventHandler( fpNetworkNetworkMediaEventCallBack fpCallback, void* pContext ) = 0;
-    virtual ISender* GetISender();
+    virtual Status Init() = 0;
+    virtual void DeInit() = 0;
+    virtual void NetworkProcessing() = 0;
+    virtual void RegisterNetworkConnectionEventHandler( NetworkCallback callback ) = 0;
+    virtual void RegisterNetworkMediaEventHandler( MediaCallback callback ) = 0;
+    virtual ISender* GetISender() = 0;
 };
 
 #endif

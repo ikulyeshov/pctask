@@ -3,6 +3,7 @@
 #define API_TYPES_HPP_
 
 #include <stdint.h>
+#include <vector>
 
 typedef int Handle;
 
@@ -23,6 +24,7 @@ enum Status
 {
 	ST_OK,
 	ST_ERROR,
+	ST_EMPTY,
 	ST_SELECT_ERROR,
 	ST_BINDING_ERROR,
 	ST_ACCEPT_ERROR,
@@ -38,5 +40,7 @@ struct CaptureMode
     uint32_t        BitrateL;
     uint32_t        BitrateH;
 };
+
+typedef std::vector<CaptureMode> CaptureModeCollection;
 
 #endif //API_TYPES_HPP_

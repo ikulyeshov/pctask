@@ -17,8 +17,6 @@ struct FrameContext
 
 typedef void( *fpCaptureFrameCallback )( void* pContext, FrameContext* pFrameContext );
 
-typedef std::vector<CaptureMode> CaptureModeCollection;
-
 struct CaptureParam
 {
     ImageResolution Resolution;
