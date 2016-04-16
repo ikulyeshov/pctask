@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
     infra::msgserver::Server server(&observer);
     int curClient = 0;
     int curCamera = 0;
+    int curBitrate = 10;//Mbit
     int buflen = infra::msgserver::TEXT_MESSAGE_MAX_MESSAGE_LEN;
     char buffer[buflen];
 
@@ -62,8 +63,8 @@ int main(int argc, char* argv[])
 				break;
 			case 't':
 				ps_log_info("Stop stream");
-				snprintf(buffer, buflen, infra::MSG_STOP, curCamera);
 				server.Message(curClient, buffer);
+				snprintf(buffer, buflen, infra::MSG_STOP, curCamera);
 				break;
 			case 'p':
 				ps_log_info("List of connections");
@@ -81,6 +82,17 @@ int main(int argc, char* argv[])
 			case '<':
 				curCamera ^= 1;
 				ps_log_info("Current camera: %i", curCamera);
+				break;
+			case 'a':
+				server.Message(curClient, infra::MSG_CAPS_REQ);
+				break;
+			case 'o':/*QOS*/
+				ps_log_info("Current bitrate: %iMbit", curBitrate);
+				snprintf(buffer, buflen, infra::MSG_QOS, curBitrate);
+				server.Message(curClient, buffer);
+				--curBitrate;
+				if (curBitrate < 2)
+					curBitrate = 10;
 				break;
 			}
 		}

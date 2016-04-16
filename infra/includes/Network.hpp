@@ -30,8 +30,8 @@ public:
     virtual INetwork::ISender* GetISender();
 
     virtual Status SendRtpBuffer( uint32_t ipAddr, uint32_t port, void* pPacket, size_t packetSize );
-    virtual Status SendCaptureCapabilities( CaptureModeCollection& captureModes );
-    virtual Status SendStreamState( NetworkStreamState );
+    virtual Status SendCaptureCapabilities( int camera, CaptureModeCollection& captureModes );
+    virtual Status SendStreamState( int camera, NetworkStreamState );
 
 private:
 	//not copyable

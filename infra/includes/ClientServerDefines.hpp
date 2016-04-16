@@ -15,6 +15,9 @@ namespace infra
 const char MSG_START[] = 		"Start %i";
 const char MSG_STOP[] = 		"Stop %i";
 const char MSG_QOS[] = 			"Qos %i"; //bitrate as argument
+const char MSG_CAPS[] = 		"Caps %i(%i) %ix%i"; //<camera> <row num> <resx x resy>
+const char MSG_CAPS_REQ[] = 	"Capsreq";
+const char MSG_OVERHEAT[] = 	"Overheat %i"; //camera
 
 } //namespace infra
 

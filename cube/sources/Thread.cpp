@@ -8,9 +8,6 @@
 #include <unistd.h>
 #include "Thread.hpp"
 
-using namespace infra;
-
-
 Thread::Thread(User* user):
 		mUser(user),
 		mThreadId(-1),

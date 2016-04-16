@@ -14,6 +14,10 @@ struct FrameContext
     size_t          DataLength;
 };
 
+struct CameraCaps
+{
+	int mOverheatTime;/*sec*/
+};
 
 typedef void( *fpCaptureFrameCallback )( void* pContext, FrameContext* pFrameContext );
 
@@ -29,6 +33,7 @@ class ICamera
 {
 public:
     virtual void GetCaptureModeList( CaptureModeCollection& captureModes) const = 0;
+    virtual void GetCaps(CameraCaps& caps) = 0;
     virtual Status Start( const CaptureParam& captureParam ) = 0;
     virtual Status Stop() = 0;
 };

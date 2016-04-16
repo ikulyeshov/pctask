@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include "Encoder.hpp"
+#include "Logger.hpp"
 
 using namespace infra;
 
@@ -26,6 +27,10 @@ Status Encoder::Init( EncodeSetting& encodeSetting )
 {
 	Status st = ST_OK;
 
+	ps_log_debug("Init encoder with resolution %ix%i",
+			encodeSetting.DestResolution.Horizontal,
+			encodeSetting.DestResolution.Vertical
+			);
 	mEncodeSetting = encodeSetting;
 
 	return st;

@@ -5,6 +5,7 @@
  *      Author: ihor
  */
 
+#include <unistd.h>
 
 #include "Cube.hpp"
 
@@ -13,8 +14,12 @@ Cube::Cube(INetwork* network, const CamerasCollection& cameras, IRtpPacketizer* 
 		mNetwork(network),
 		mCameras(cameras),
 		mPacketizer(packetizer),
-		mEncoders(encoders)
+		mEncoders(encoders),
+		mCurrentBitrate(10),
+		mThread(this)
 {
+	mStartTime.resize(mCameras.size());
+
 	INetwork::NetworkCallback networkCallback;
 	networkCallback.Callback = NetworkConnectionEventCallBack;
 	networkCallback.Context = this;
@@ -34,7 +39,10 @@ Cube::Cube(INetwork* network, const CamerasCollection& cameras, IRtpPacketizer* 
 	{
 		GetEncoderSetting(i, encodeSetting);
 		mEncoders[i]->Init(encodeSetting);
+		mStartTime[i] = 0;
 	}
+
+	mThread.Start();
 }
 
 Cube::~Cube()
@@ -44,11 +52,22 @@ Cube::~Cube()
 
 void Cube::GetEncoderSetting(int camera, EncodeSetting& encodeSetting)
 {
+	/*here simplified link adaptation: select resolution base on bitrate*/
+	CaptureModeCollection captureModes;
+	mCameras[camera]->GetCaptureModeList(captureModes);
+
+	int index = (mCurrentBitrate - 2) * captureModes.size() / 8;
+	if (index >= captureModes.size())
+		index = captureModes.size() - 1;
+
+
+	ps_log_debug("Select new resolution index %i", index);
+
 	encodeSetting.SourceResolution.Horizontal = 1024;
 	encodeSetting.SourceResolution.Vertical = 768;
 
-	encodeSetting.DestResolution.Horizontal = 1024;
-	encodeSetting.DestResolution.Vertical = 768;
+	encodeSetting.DestResolution.Horizontal = captureModes[index].Resolution.Horizontal;
+	encodeSetting.DestResolution.Vertical = captureModes[index].Resolution.Vertical;
 
 	encodeSetting.Stream.Framerate = 20;
 	encodeSetting.Stream.MaxKeyInterval = 5;
@@ -76,7 +95,26 @@ void Cube::CaptureFrameCallback1( void* pContext, FrameContext* pFrameContext )
 
 void Cube::OnNetworkCallback(NetworkConnectionEvent event)
 {
+	switch (event)
+	{
+	case NET_CONNECTED_EVENT:
+		/*Send capabilities on connect*/
+		SendCapabilities();
+		break;
+	case NET_DISCONNECTED_EVENT:
+		break;
 
+	}
+}
+
+void Cube::SendCapabilities()
+{
+	for (int i = 0; i < mCameras.size(); ++i)
+	{
+		CaptureModeCollection captureModes;
+		mCameras[i]->GetCaptureModeList(captureModes);
+		mNetwork->GetISender()->SendCaptureCapabilities(i, captureModes);
+	}
 }
 
 void Cube::OnMediaCallback(NetworkEventStruct* pNetworkEvent)
@@ -93,10 +131,29 @@ void Cube::OnMediaCallback(NetworkEventStruct* pNetworkEvent)
 			params.Callback.Context = this;
 
 			mCameras[pNetworkEvent->StreamParams.Camera]->Start(params);
+
+			mStartTime[pNetworkEvent->StreamParams.Camera] = mTickCounter;
 			break;
 		}
 	case NET_VIDEO_STOP_STREAM_EVENT:
 		mCameras[pNetworkEvent->StreamParams.Camera]->Stop();
+		break;
+	case NET_VIDEO_REQ_CAPABILITIES_EVENT:
+		SendCapabilities();
+		break;
+	case NET_VIDEO_NETWORK_PARAMETERS_CHANGED_EVENT:
+		{
+			mCurrentBitrate = pNetworkEvent->NetworkParams.TargetBitrate;
+
+			EncodeSetting encodeSetting;
+
+			for (int i = 0; i < mEncoders.size(); ++i)
+			{
+				GetEncoderSetting(i, encodeSetting);
+				mEncoders[i]->Init(encodeSetting);
+			}
+		}
+
 		break;
 	}
 }
@@ -127,3 +184,24 @@ void Cube::OnCameraData(int camera, FrameContext* pFrameContext)
 	}
 }
 
+void Cube::OnThread()
+{
+	++mTickCounter;
+
+	for (int i = 0; i < mCameras.size(); ++i)
+	{
+		CameraCaps camCaps;
+		mCameras[i]->GetCaps(camCaps);
+
+		if (camCaps.mOverheatTime != 0 && mTickCounter - mStartTime[i] >= camCaps.mOverheatTime && mStartTime[i])
+		{
+			ps_log_debug("Camera %i is overheated: stop", i);
+			mCameras[i]->Stop();
+			mNetwork->GetISender()->SendStreamState(i, NET_VIDEO_STREAM_STOPPED_STATE);
+			mStartTime[i] = 0;
+		}
+	}
+
+	sleep(1);
+
+}

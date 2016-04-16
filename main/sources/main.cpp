@@ -13,7 +13,7 @@
 #include "RtpPacketizer.hpp"
 #include "Encoder.hpp"
 
-const int DEF_SERVER_PORT =			4007;
+const int DEF_SERVER_PORT =			4008;
 const char DEF_SERVER_ADDR[] =		"127.0.0.1";
 
 int main(int argc, char* argv[])
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 	modes.back().Resolution.Horizontal = 1920;
 	modes.back().Resolution.Vertical = 1080;
 
-	cameras.push_back(new infra::Camera(modes));
+	cameras.push_back(new infra::Camera(modes, 10));
 
 	modes.clear();
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 	modes.back().Resolution.Horizontal = 1920;
 	modes.back().Resolution.Vertical = 1080;
 
-	cameras.push_back(new infra::Camera(modes));
+	cameras.push_back(new infra::Camera(modes, 0/*no overheat*/));
 
 	infra::Network network(addr, portno);
 

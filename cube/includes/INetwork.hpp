@@ -71,8 +71,8 @@ public:
     {
     public:
         virtual Status SendRtpBuffer( uint32_t ipAddr, uint32_t port, void* pPacket, size_t packetSize ) = 0;
-        virtual Status SendCaptureCapabilities( CaptureModeCollection& captureModes ) = 0;
-        virtual Status SendStreamState( NetworkStreamState ) = 0;
+        virtual Status SendCaptureCapabilities( int camera, CaptureModeCollection& captureModes ) = 0;
+        virtual Status SendStreamState( int camera, NetworkStreamState ) = 0;
     };
 
     virtual Status Init() = 0;

@@ -13,8 +13,9 @@
 #include "INetwork.hpp"
 #include "IRtpPacketizer.hpp"
 #include "IEncoder.hpp"
+#include "Thread.hpp"
 
-class Cube
+class Cube: public Thread::User
 {
 public:
 	typedef std::vector<ICamera*> CamerasCollection;
@@ -27,6 +28,8 @@ public:
 			const EncodersCollection& encoders
 		);
 	~Cube();
+
+	virtual void OnThread();
 
 private:
 	static void NetworkConnectionEventCallBack( void* pContext, NetworkConnectionEvent event );
@@ -42,8 +45,14 @@ private:
 	IRtpPacketizer* mPacketizer;
 	CamerasCollection mCameras;
 	EncodersCollection mEncoders;
+	int mCurrentBitrate;
+	int mTickCounter;
+	std::vector<int> mStartTime;
+	Thread mThread;
 
 	void GetEncoderSetting(int camera, EncodeSetting& encodeSetting);
+	void SendCapabilities();
+
 
 };
 

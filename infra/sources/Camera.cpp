@@ -16,11 +16,12 @@ const char FRAME_DATA[] = "Frame";
 
 using namespace infra;
 
-Camera::Camera(const CaptureModeCollection& captureModes):
+Camera::Camera(const CaptureModeCollection& captureModes, int overheatTime):
 		mCaptureModes(captureModes),
 		mStarted(0),
 		mTickCounter(0),
-		mThread(this)
+		mThread(this),
+		mOverheatTime(overheatTime)
 {
 }
 
@@ -87,4 +88,7 @@ void Camera::OnThread()
 
 }
 
-
+void Camera::GetCaps(CameraCaps& caps)
+{
+	caps.mOverheatTime = mOverheatTime;
+}

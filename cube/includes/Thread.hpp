@@ -11,9 +11,6 @@
 #include <pthread.h>
 #include "Types.hpp"
 
-namespace infra
-{
-
 class Thread
 {
 public:
@@ -43,9 +40,5 @@ private:
 	volatile int mStop;
 
 };
-
-} //namespace infra
-
-
 
 #endif /* INCLUDES_THREAD_HPP_ */

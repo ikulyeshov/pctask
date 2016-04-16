@@ -17,10 +17,11 @@ namespace infra
 class Camera: public ICamera, public Thread::User
 {
 public:
-	Camera(const CaptureModeCollection& captureModes);
+	Camera(const CaptureModeCollection& captureModes, int overheatTime/*sec*/);
 	virtual ~Camera();
 
     virtual void GetCaptureModeList( CaptureModeCollection& captureModes ) const;
+    virtual void GetCaps(CameraCaps& caps);
     virtual Status Start( const CaptureParam& captureParam );
     virtual Status Stop();
 
@@ -36,6 +37,7 @@ private:
 	int mTickCounter;
 	CaptureParam mCaptureParam;
 	Thread mThread;
+	int mOverheatTime;
 
 };
 
