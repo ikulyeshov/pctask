@@ -8,8 +8,18 @@
 
 #include "Logger.hpp"
 #include "TextMessageServer.hpp"
+#include "ClientServerDefines.hpp"
 
 const int DEF_SERVER_PORT =			4005;
+
+
+struct ServerObserver: infra::msgserver::Server::Observer
+{
+	virtual void OnMessage(Handle connect, const char* message)
+	{
+		ps_log_debug("Cam %i data: %s", connect, message);
+	}
+};
 
 
 int main(int argc, char* argv[])
@@ -25,8 +35,14 @@ int main(int argc, char* argv[])
         portno = atoi(argv[1]);
     }
 
-    infra::msgserver::Server server;
+    ServerObserver observer;
+    infra::msgserver::Server server(&observer);
     int curClient = 0;
+    int curCamera = 0;
+    int buflen = infra::msgserver::TEXT_MESSAGE_MAX_MESSAGE_LEN;
+    char buffer[buflen];
+
+    printf("Use 'q' to exit\n");
 
     if (server.Start(portno) == ST_OK)
     {
@@ -41,11 +57,13 @@ int main(int argc, char* argv[])
 			{
 			case 's':
 				ps_log_info("Start stream");
-				server.Message(curClient, infra::msgserver::MSG_START);
+				snprintf(buffer, buflen, infra::MSG_START, curCamera);
+				server.Message(curClient, buffer);
 				break;
 			case 't':
 				ps_log_info("Stop stream");
-				server.Message(curClient, infra::msgserver::MSG_STOP);
+				snprintf(buffer, buflen, infra::MSG_STOP, curCamera);
+				server.Message(curClient, buffer);
 				break;
 			case 'p':
 				ps_log_info("List of connections");
@@ -58,6 +76,11 @@ int main(int argc, char* argv[])
 			case '-':
 				--curClient;
 				ps_log_info("Current client: %i", curClient);
+				break;
+			case '>':
+			case '<':
+				curCamera ^= 1;
+				ps_log_info("Current camera: %i", curCamera);
 				break;
 			}
 		}

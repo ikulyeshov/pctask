@@ -13,53 +13,60 @@
 #include "TextMessageDefines.hpp"
 #include "Types.hpp"
 #include "TextMessageTransport.hpp"
+#include "Mutex.hpp"
+#include "Thread.hpp"
 
 namespace infra
 {
 namespace msgserver
 {
 
-class Server
+class Server: public Thread::User, public Transport::Observer
 {
 
 static const int MAX_ADDR = 50;
 
 public:
 
-struct ClientDesc
-{
-	int mPort;
-	char mAddr[MAX_ADDR];
-	infra::msgserver::Transport *mTransport;
-};
+	struct Observer
+	{
+		virtual void OnMessage(Handle connect, const char* message) = 0;
+	};
 
-typedef std::vector<ClientDesc> ClientsCollection;
+	struct ClientDesc
+	{
+		int mPort;
+		char mAddr[MAX_ADDR];
+		int mSocket;
+		infra::msgserver::Transport *mTransport;
+	};
+
+	typedef std::vector<ClientDesc> ClientsCollection;
 
 public:
-	Server();
+	Server(Observer* observer);
 	~Server();
 
 	Status Start(int port);
 	Status Message(Handle client, const char* message);
 	Status List();//List of the client connected
 
+	virtual void OnMessage(int sockfd, const char* message);
+
 private:
 	//not copyable
 	Server(const Server& rop);
 	const Server operator=(const Server& rop);
 
-	static void* ThreadCallback(void *arg);
-	void DoThread();
-
-	void Lock();
-	void Unlock();
+	virtual void OnThread();
 
 	int mSocket;
 	sockaddr_in mServerAddr;
 	sockaddr_in mClientAddr;
-	pthread_t mThreadId;
-	pthread_mutex_t mLockMutex;
+	Thread mThread;
+	Mutex mLockMutex;
 	ClientsCollection mClients;
+	Observer* mObserver;
 
 };
 

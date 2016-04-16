@@ -20,7 +20,8 @@
 
 using namespace infra::msgserver;
 
-Client::Client()
+Client::Client(Observer* observer):
+		mObserver(observer)
 {
 }
 
@@ -38,8 +39,7 @@ Status Client::Message(const char* message)
 
 Status Client::Start(const char* addr, int port)
 {
-    int sockfd = -1, portno, n;
-    struct sockaddr_in serv_addr;
+    int sockfd = -1;
 
     Status st = ST_OK;
 
@@ -62,23 +62,23 @@ Status Client::Start(const char* addr, int port)
 			break;
 		}
 
-		bzero((char *) &serv_addr, sizeof(serv_addr));
-		serv_addr.sin_family = AF_INET;
-		bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
-		serv_addr.sin_port = htons(port);
-		if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+		bzero((char *) &mServAddr, sizeof(mServAddr));
+		mServAddr.sin_family = AF_INET;
+		bcopy((char *)server->h_addr, (char *)&mServAddr.sin_addr.s_addr, server->h_length);
+		mServAddr.sin_port = htons(port);
+		if (connect(sockfd,(struct sockaddr *) &mServAddr,sizeof(mServAddr)) < 0)
 		{
 			ps_log_error("Error connecting");
 			st = ST_CONNECT_ERROR;
 			break;
 		}
 
-		mTransport = new Transport(sockfd, 0);
+		mTransport = new Transport(sockfd, this);
 		mTransport->Listen();
     }
     while (0);
 
-    if (sockfd >= 0)
+    if (sockfd >= 0 && st != ST_OK)
     {
     	close(sockfd);
     }
@@ -86,5 +86,10 @@ Status Client::Start(const char* addr, int port)
 	return st;
 }
 
+void Client::OnMessage(int sockfd, const char* message)
+{
+	if (mObserver)
+		mObserver->OnMessage(message);
+}
 
 

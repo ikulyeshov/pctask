@@ -18,59 +18,41 @@
 
 using namespace infra::msgserver;
 
-Server::Server():
+Server::Server(Observer* observer):
 		mSocket(-1),
-		mThreadId(-1)
+		mThread(this),
+		mObserver(observer)
 {
-//	mClients.res(10);
-	pthread_mutex_init(&mLockMutex, 0);
+	mClients.reserve(10);
 }
 
 Server::~Server()
 {
-	pthread_mutex_destroy(&mLockMutex);
 }
 
-void Server::Lock()
+void Server::OnThread()
 {
-	pthread_mutex_lock(&mLockMutex);
-}
+	listen(mSocket, 5);
+	socklen_t clilen = sizeof(mClientAddr);
+	int newsockfd = accept(mSocket, (struct sockaddr *) &mClientAddr, &clilen);
 
-void Server::Unlock()
-{
-	pthread_mutex_unlock(&mLockMutex);
-}
-
-void* Server::ThreadCallback(void *arg)
-{
-	static_cast<Server*>(arg)->DoThread();
-}
-
-void Server::DoThread()
-{
-	do
+	if (newsockfd < 0)
 	{
-		listen(mSocket, 5);
-		socklen_t clilen = sizeof(mClientAddr);
-		int newsockfd = accept(mSocket, (struct sockaddr *) &mClientAddr, &clilen);
+		ps_log_error("Error on accept");
+		return;
+	}
 
-		if (newsockfd < 0)
-		{
-			ps_log_error("Error on accept");
-			continue;
-		}
-
-		Lock();
+	{
+		Locker lock(mLockMutex);
 		ps_log_info("Accept connection %i %i", mClients.size(), mClientAddr.sin_port);
 
 		mClients.push_back(ClientDesc());
+		mClients.back().mSocket = newsockfd;
 		mClients.back().mPort = mClientAddr.sin_port;
-		infra::msgserver::Transport *transport = new infra::msgserver::Transport(newsockfd, 0);
+		infra::msgserver::Transport *transport = new infra::msgserver::Transport(newsockfd, this);
 		mClients.back().mTransport = transport;
 		mClients.back().mTransport->Listen();
-		Unlock();
 	}
-	while (1);
 }
 
 Status Server::Start(int port)
@@ -101,8 +83,7 @@ Status Server::Start(int port)
 			break;
 		}
 
-		st = pthread_create(&mThreadId, 0, &ThreadCallback, this) ? ST_ERROR : ST_OK;
-
+		st = mThread.Start();
     }
     while (0);
 
@@ -118,14 +99,12 @@ Status Server::Start(int port)
 Status Server::Message(Handle client, const char* message)
 {
 	Status st = ST_OK;
-	Lock();
+	Locker lock(mLockMutex);
 	if (client >= 0 && client < mClients.size())
 	{
 		ps_log_debug("Sending message %s", message);
 		mClients[client].mTransport->Write(message);
-		ps_log_debug("Finish sending");
 	}
-	Unlock();
 	return st;
 }
 
@@ -133,14 +112,32 @@ Status Server::List()
 {
 	Status st = ST_OK;
 
-	Lock();
+	Locker lock(mLockMutex);
 	ClientsCollection::iterator it = mClients.begin();
 	while (it != mClients.end())
 	{
 		ps_log_info("Client %i: port %i", it - mClients.begin(), it->mPort);
 		++it;
 	}
-	Unlock();
 
 	return st;
+}
+
+void Server::OnMessage(int sockfd, const char* message)
+{
+	if (!mObserver)
+		return;
+
+	/*look whom to redirect message*/
+	Locker lock(mLockMutex);
+
+	ClientsCollection::iterator it = mClients.begin();
+	while (it != mClients.end())
+	{
+		if (it->mSocket == sockfd)
+		{
+			mObserver->OnMessage(it - mClients.begin(), message);
+		}
+		++it;
+	}
 }

@@ -2,6 +2,7 @@
 #ifndef API_TYPES_HPP_
 #define API_TYPES_HPP_
 
+#include <stdint.h>
 
 typedef int Handle;
 
@@ -34,7 +35,8 @@ enum Status
 struct CaptureMode
 {
     ImageResolution Resolution;
-    uint32_t        Bitrate;
+    uint32_t        BitrateL;
+    uint32_t        BitrateH;
 };
 
 #endif //API_TYPES_HPP_

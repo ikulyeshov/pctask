@@ -12,21 +12,19 @@
 
 #include "TextMessageDefines.hpp"
 #include "Types.hpp"
+#include "Thread.hpp"
 
 namespace infra
 {
 namespace msgserver
 {
 
-class Transport
+class Transport: public Thread::User
 {
 public:
 	struct Observer
 	{
-		Observer(){}
-		~Observer(){}
-
-		virtual void OnMessage(const char* message) = 0;
+		virtual void OnMessage(int sockfd, const char* message) = 0;
 	};
 
 public:
@@ -36,18 +34,16 @@ public:
 	Status Listen();
 	Status Write(const char* message);
 
+	virtual void OnThread();
+
 private:
 	//not copyable
 	Transport(const Transport& rop);
 	const Transport operator=(const Transport& rop);
 
-	static void* ThreadCallback(void *arg);
-
-	void DoThread();
-
 	char mBuffer[TEXT_MESSAGE_MAX_MESSAGE_LEN];
 	char* mBufferPtr;
-	pthread_t mThreadId;
+	Thread mThread;
 	int mSocket;
 	Observer* mObserver;
 

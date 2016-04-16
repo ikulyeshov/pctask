@@ -20,7 +20,7 @@
 using namespace infra::msgserver;
 
 Transport::Transport(int sockfd, Observer* observer):
-		mThreadId(0),
+		mThread(this),
 		mSocket(sockfd),
 		mBufferPtr(0),
 		mObserver(observer)
@@ -31,16 +31,14 @@ Transport::~Transport()
 {
 }
 
-void* Transport::ThreadCallback(void *arg)
-{
-	static_cast<Transport*>(arg)->DoThread();
-}
-
 Status Transport::Listen()
 {
 	Status st = ST_OK;
 
-	st = pthread_create(&mThreadId, 0, &ThreadCallback, this) ? ST_ERROR : ST_OK;
+	bzero(mBuffer, TEXT_MESSAGE_MAX_MESSAGE_LEN);
+	mBufferPtr = mBuffer;
+
+	st = mThread.Start();
 
 	return st;
 }
@@ -55,78 +53,72 @@ Status Transport::Write(const char* message)
 		ps_log_error("Error writing to socket");
 		st = ST_WRITE_ERROR;
 	}
-//	write(mSocket, "\n", 1);
+	write(mSocket, "\n", 1);
 
 	return st;
 }
 
-void Transport::DoThread()
+void Transport::OnThread()
 {
-	bzero(mBuffer, TEXT_MESSAGE_MAX_MESSAGE_LEN);
-
 	fd_set read_fd;
 	FD_ZERO (&read_fd);
 	FD_SET (mSocket, &read_fd);
 
 	Status st = ST_OK;
-	mBufferPtr = mBuffer;
 
-	while (st == ST_OK)
+	if (select(FD_SETSIZE, &read_fd, NULL, NULL, NULL) < 0)
 	{
-		if (select(FD_SETSIZE, &read_fd, NULL, NULL, NULL) < 0)
-		{
-			ps_log_error ("Error on select");
-			st = ST_SELECT_ERROR;
-			continue;
-		}
+		ps_log_error ("Error on select");
+		st = ST_SELECT_ERROR;
+		return;
+	}
 
-		for (int i = 0; i < FD_SETSIZE && st == ST_OK; ++i)
+	for (int i = 0; i < FD_SETSIZE && st == ST_OK; ++i)
+	{
+		if (FD_ISSET (i, &read_fd))
 		{
-			if (FD_ISSET (i, &read_fd))
+			if (i == mSocket)
 			{
-				if (i == mSocket)
+				int n = read(mSocket, mBufferPtr, TEXT_MESSAGE_MAX_MESSAGE_LEN - (mBufferPtr - mBuffer) /*space left*/);
+				mBufferPtr += n;
+
+				char* prevToken = mBuffer;
+				int j = 0;
+				for (j = 0; j < mBufferPtr - mBuffer; ++j)
 				{
-					int n = read(mSocket, mBufferPtr, TEXT_MESSAGE_MAX_MESSAGE_LEN - (mBufferPtr - mBuffer) /*space left*/);
-					mBufferPtr += n;
-
-					char* prevToken = mBuffer;
-					int j = 0;
-					for (j = 0; j < mBufferPtr - mBuffer; ++j)
+					if (mBuffer[j] == '\n')
 					{
-						if (mBuffer[j] == '\n')
+						mBuffer[j] = '\0';
+						ps_log_debug("%i Msg -> %s", mSocket, prevToken);
+						if (mObserver)
 						{
-							mBuffer[j] = '\0';
-							ps_log_debug("%i Msg -> %s", mSocket, prevToken);
-							if (mObserver)
-							{
-								mObserver->OnMessage(prevToken);
-							}
-							prevToken = mBuffer + j + 1;
+							mObserver->OnMessage(mSocket, prevToken);
 						}
+						prevToken = mBuffer + j + 1;
 					}
+				}
 
-					if (prevToken == mBuffer && j == TEXT_MESSAGE_MAX_MESSAGE_LEN)
-					{
-						ps_log_error("Two long message, reset");
-						mBufferPtr = mBuffer;
-					}
+				if (prevToken == mBuffer && j == TEXT_MESSAGE_MAX_MESSAGE_LEN)
+				{
+					ps_log_error("Two long message, reset");
+					mBufferPtr = mBuffer;
+				}
 
-					if (prevToken < mBufferPtr) /*some unfinished data in. Put to the begin of buffer*/
+				if (prevToken < mBufferPtr) /*some unfinished data in. Put it to the begin of buffer*/
+				{
+					if (prevToken != mBuffer)
 					{
-						if (prevToken != mBuffer)
+						int j = 0;
+						for (j = 0; j < mBufferPtr - prevToken; ++j)
 						{
-							int j = 0;
-							for (j = 0; j < mBufferPtr - prevToken; ++j)
-							{
-								mBuffer[j] = prevToken[j];
-							}
-							mBufferPtr = mBuffer + j;
+							mBuffer[j] = prevToken[j];
 						}
+						mBufferPtr = mBuffer + j;
 					}
-					else
-					{
-						mBufferPtr = mBuffer;
-					}
+				}
+				else
+				{
+					mBufferPtr = mBuffer;
 				}
 			}
 		}

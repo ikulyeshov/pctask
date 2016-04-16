@@ -16,9 +16,6 @@ namespace msgserver
 
 const int TEXT_MESSAGE_MAX_MESSAGE_LEN =		100;
 
-const char MSG_START[] = 		"Start\n";
-const char MSG_STOP[] = 		"Stop\n";
-
 
 } //namespace msgserver
 } //namespace infra

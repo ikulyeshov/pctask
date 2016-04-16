@@ -9,20 +9,33 @@
 #define INCLUDES_CAMERA_HPP_
 
 #include "ICamera.hpp"
+#include "Thread.hpp"
 
 namespace infra
 {
 
-class Camera: public ICamera
+class Camera: public ICamera, public Thread::User
 {
 public:
-	Camera();
+	Camera(const CaptureModeCollection& captureModes);
 	virtual ~Camera();
+
+    virtual void GetCaptureModeList( CaptureModeCollection& captureModes ) const;
+    virtual Status Start( const CaptureParam& captureParam );
+    virtual Status Stop();
+
+	virtual void OnThread();
 
 private:
 	//not copyable
 	Camera(const Camera& rop);
 	const Camera& operator=(const Camera& rop);
+
+	CaptureModeCollection mCaptureModes;
+	int mStarted;
+	int mTickCounter;
+	CaptureParam mCaptureParam;
+	Thread mThread;
 
 };
 
