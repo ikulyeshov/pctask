@@ -10,7 +10,7 @@
 #include "TextMessageServer.hpp"
 #include "ClientServerDefines.hpp"
 
-const int DEF_SERVER_PORT =			4005;
+const int DEF_SERVER_PORT =			4000;
 
 
 struct ServerObserver: infra::msgserver::Server::Observer

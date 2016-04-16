@@ -13,7 +13,7 @@
 #include "RtpPacketizer.hpp"
 #include "Encoder.hpp"
 
-const int DEF_SERVER_PORT =			4008;
+const int DEF_SERVER_PORT =			4000;
 const char DEF_SERVER_ADDR[] =		"127.0.0.1";
 
 int main(int argc, char* argv[])
